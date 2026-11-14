@@ -1,0 +1,22 @@
+{
+  ".gitignore": "8b97443766004182fa2f735f1035f344fbe8645a17ea23fb87b96dd936f6ce66",
+  "AGENTS.md": "c14f320a56acb7b142694b9014f8c4b3efa66b8fa783b92f5443c02ddea4a46f",
+  "LEER_PRIMERO.md": "ca7171607ed00ebe877e4b19ab6b2f347f44a3a1b05471f0819ee5ff31354ac5",
+  "README.md": "ea20764b7ee827ba56e96bb90ec2c6e0adede9c364e27bfee9f67235f88311f8",
+  "configs/sample_config.json": "228a99a9b96e34c4a6a92f98ad1d85090d9113c6dd24bf44d067327584bbd8cb",
+  "data/manifests/dataset_summary.json": "d97d5938f0c0b35c06946b883d08de41a2d762f07027c196f7ae9ec2b049fd8f",
+  "data/manifests/download_manifest.csv": "b73490a43447f48394fcedaa48d1d9db00503e4a42d4e688e2181b7fce574d18",
+  "data/manifests/exclusions.csv": "fc027e15b22cc094af463f6af432fed1d9ce401fe384ef89d0f0681f644ca406",
+  "data/manifests/pilot20.csv": "aae01631acba0b0bed23c2c2d747a3204d78334ffc0c17944fa1112c6b82cbb5",
+  "data/manifests/reserve100.csv": "3e01f1470b7162cecdcb2ec17d9d0f7754003331baf67555f8483898b5aebdd8",
+  "data/manifests/sample_config.json": "228a99a9b96e34c4a6a92f98ad1d85090d9113c6dd24bf44d067327584bbd8cb",
+  "docs/01_CONTEXTO_Y_DECISIONES.md": "2a1196d56e80b53161ac7203f5a5b3be8d0a29a68bd8b526132c13b3981b120d",
+  "docs/02_ESTADO_VERIFICADO.md": "97a3a35513950f83654e32e310e53365411817a803c07b5a91426bebfb123736",
+  "docs/03_DATOS_Y_SELECCION.md": "ee850e4cb385caaae715066957ee886a0544609bea9d0be4bd90f71ff6cb4fbb",
+  "docs/04_SIGUIENTE_PASO.md": "cf863cc566914be455b784b05a21f63ddf544e833ee2c2e51552f4c8c93de111",
+  "docs/05_REPOSITORIO_Y_PIPELINE.md": "0c7059ee433009d206554c60cdb2a3c34d108f9a13395281b5aacb12f43fafda",
+  "docs/06_LIMITACIONES_Y_FUENTES.md": "753c1becbba48f78d0bf13057df3f14758afb02055e2e67f36ca03ba09ff7be6",
+  "docs/archive/Plan_prototipo_federado_CheXpert.md": "82336fef9be9389b873c99cdc8417c0eed54b59099139d811dcbd6665ea1e370",
+  "scripts/download_dicoms.py": "c56bc67cd7a7eea209d6cdbefccb84e7a3dfd362b37faeda70983c6d2c403f5f",
+  "scripts/prepare_sample.py": "b1c3645fa3cc68299d95253d7908d6f613c6d9d9123a6ef4c9b86f865d845735"
+}

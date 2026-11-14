@@ -1,0 +1,27 @@
+{
+  "seed": 42,
+  "original_split": "train",
+  "age_min": 18,
+  "views": [
+    "AP",
+    "PA"
+  ],
+  "label_source": "report_fixed.json",
+  "label_generator": "not_verified",
+  "label_policy": {
+    "1": 1,
+    "0": 0,
+    "-1": "exclude",
+    "null": "exclude"
+  },
+  "image_per_patient": "lowest SHA256 of 42|image|patient_id|image_id among eligible indexed images",
+  "patient_selection": "lowest SHA256 of 42|patient|patient_id within each class",
+  "target_per_class": 400,
+  "reserve_per_class": 50,
+  "final_splits_assigned": false,
+  "source_sha256": {
+    "df_chexpert_plus_240401.csv": "6a699e14063e6643a2ce384bd2551f242dbb71ea6f75033ad2d13d1cb273a58b",
+    "report_fixed.json": "63a7aaf0203d27ec0171361d7102dde8a7175487b1e9aa72c4dced87866bd93d",
+    "dicom_train.csv": "e018fa36904c8ea9eafcef130082adf8e47464cca168b9ab4a34c9d8a9b6b2b7"
+  }
+}
