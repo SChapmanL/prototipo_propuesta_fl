@@ -1,0 +1,39 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "pneumonia-fl-prototype"
+version = "0.1.0"
+description = "Prototipo federado de deteccion de neumonia con Flower y TensorFlow/Keras"
+# TensorFlow 2.21 no publica instaladores para Python 3.14.
+# La simulacion de Flower en Windows (Ray) admite Python 3.11 y 3.12.
+requires-python = ">=3.11,<3.13"
+dependencies = [
+    "flwr[simulation]==1.43.0",
+    "tensorflow==2.21.0",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["pneumonia_fl"]
+
+[tool.flwr.app]
+publisher = "pneumonia-fl"
+# Sin fab-format-version (formato 0). El formato 1 exige un archivo LICENSE
+# y el equipo aun no ha elegido licencia.
+flwr-version-target = "1.43.0"
+
+[tool.flwr.app.components]
+serverapp = "pneumonia_fl.server_app:app"
+clientapp = "pneumonia_fl.client_app:app"
+
+# Configuracion unica. Cliente y servidor la leen desde context.run_config.
+[tool.flwr.app.config]
+num-server-rounds = 2
+local-epochs = 1
+batch-size = 8
+learning-rate = 0.001
+seed = 42
+data-root = "data/raw/dicom"
+manifest-root = "data/manifests"
+output-dir = "outputs/federation"

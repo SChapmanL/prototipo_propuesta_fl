@@ -9,3 +9,4 @@ outputs/
 !.env.example
 __pycache__/
 *.pyc
+.venv-fl/
