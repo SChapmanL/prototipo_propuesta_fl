@@ -1,5 +1,7 @@
-data/
-outputs/
+# Ancladas a la raiz con la barra inicial. Sin ella, "data/" tambien
+# ignoraria pneumonia_fl/data/, que es codigo y si debe subirse.
+/data/
+/outputs/
 *.dcm
 *.part
 *.zip
