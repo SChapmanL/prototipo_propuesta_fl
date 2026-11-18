@@ -111,9 +111,18 @@ No se completó la inspección visual del preprocesamiento ni una validación cl
 - Función de comprobación del descargador probada con los cuatro DICOM correctos.
 - Modo sin descarga del descargador ejecutado correctamente.
 
+## Pasos 2 a 5 ejecutados el 18 de noviembre de 2026
+
+Detalle completo, con cifras y fundamentos, en `docs/10_MODELO_LOCAL.md`.
+
+- **Particiones.** Seis manifiestos por cliente, 70/15/15 por paciente con hash y semilla 42. 280 de train, 60 de validación y 60 de prueba por cliente, con balance 50/50 en todos. Sin pacientes compartidos. Reproducible byte a byte.
+- **Preprocesamiento.** Política de intensidad decidida midiendo los 800 archivos: rescalado DICOM, recorte p1-p99 por imagen, inversión de MONOCHROME1 al final, 224x224 y `preprocess_input` una sola vez. Controles superados en los dos clientes.
+- **Modelo.** ResNet50 con base congelada, 2 049 parámetros entrenables. Dos llamadas a `build_model` dan pesos idénticos en los 320 tensores, que es lo que FedAvg necesita.
+- **Referencias locales.** Ejecutadas por cliente, sin usar prueba.
+
 ## Trabajo pendiente
 
-Actualizado el 18 de noviembre de 2026. La descarga autenticada, los 800 DICOM, el entorno local y las versiones ya están resueltos y se describen al principio de este documento.
+Sigue pendiente la integración con la federación y la evaluación final con prueba. Las métricas de `outputs/federation/` son de la prueba técnica sintética de Sebastián, no de datos reales.
 
-Sigue pendiente: las particiones finales por paciente, el preprocesamiento definitivo con su política de intensidad, el modelo, el entrenamiento local, las referencias locales y la integración con la federación. Las métricas existentes son de la prueba técnica sintética de Sebastián, no de datos reales.
+**El modelo no aprende todavía.** Las referencias locales dan AUROC de validación entre 0,49 y 0,59, es decir el azar. La causa está medida y es sobreajuste: con 60 épocas el AUROC de entrenamiento sube a 0,84 mientras el de validación se queda en 0,54. Con 280 imágenes de entrenamiento por cliente no hay con qué generalizar. La palanca propuesta es ampliar la muestra, decisión que corresponde al equipo.
 
