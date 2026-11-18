@@ -50,11 +50,18 @@ def leer_csv(path):
 
 
 def escribir_csv(path, filas):
+    """Escribe un manifiesto de cliente.
+
+    dicom_path se guarda RELATIVO A data_root, como exige docs/07. El
+    manifiesto maestro usa otra convencion y lo guarda relativo a la raiz
+    del repositorio. Por eso aqui se reescribe a partir de file_name.
+    """
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("w", newline="", encoding="utf-8") as f:
         escritor = csv.DictWriter(f, fieldnames=COLUMNAS, extrasaction="ignore")
         escritor.writeheader()
-        escritor.writerows(filas)
+        for fila in filas:
+            escritor.writerow({**fila, "dicom_path": fila["file_name"]})
 
 
 def reparte_particiones(filas, pilot_ids):
