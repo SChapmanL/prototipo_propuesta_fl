@@ -11,18 +11,36 @@ que los consigue.
 
 No guarda credenciales. Usa la sesion autorizada de Redivis de la usuaria.
 
+Hay dos clases de tabla en este dataset. Unas contienen filas de datos y se
+exportan completas. Otras contienen archivos adjuntos, como DICOM_train con
+las imagenes. Para esas hay que listar sus archivos y bajar uno.
+
+Nombres reales comprobados en aimi.chexpert_plus:5yyj:v1_0 el 18/11/2026:
+
+    Archivo que necesita         Tabla de Redivis           Filas    Como
+    prepare_sample.py
+    ---------------------------  -------------------------  -------  -----------
+    df_chexpert_plus_240401.csv  df_chexpert_plus_240401    223 462  tabla
+    dicom_train.csv              DICOM_train                210 740  tabla
+    report_fixed.json            CheXpert Labels                  3  archivo
+
+Los dos primeros conteos coinciden con docs/02_ESTADO_VERIFICADO.md.
+CheXpert Labels tiene 3 filas porque es una tabla de archivos adjuntos.
+
 Uso (desde la raiz del repositorio):
 
-    # 1. Ver que tablas existen y como se llaman de verdad
+    # 1. Ver que tablas existen
     python scripts/fetch_metadata.py
 
-    # 2. Descargar una tabla al nombre de archivo que espera prepare_sample.py
-    python scripts/fetch_metadata.py --table <nombre> --out dicom_train.csv
+    # 2. Ver los archivos adjuntos de una tabla
+    python scripts/fetch_metadata.py --files "CheXpert Labels"
 
-Archivos que necesita prepare_sample.py en data/raw/metadata/:
-    df_chexpert_plus_240401.csv   tabla principal de metadatos
-    report_fixed.json             etiquetas (una linea JSON por registro)
-    dicom_train.csv               indice de archivos DICOM
+    # 3. Exportar una tabla de datos completa
+    python scripts/fetch_metadata.py --table DICOM_train --out dicom_train.csv
+
+    # 4. Bajar un archivo adjunto de una tabla
+    python scripts/fetch_metadata.py --table "CheXpert Labels" \
+        --file report_fixed.json --out report_fixed.json
 
 Sobre el control de SHA256: al terminar, el script compara el hash del archivo
 con el registrado en configs/sample_config.json. Si coincide, la fuente es
@@ -79,8 +97,27 @@ def list_tables():
     )
 
 
-def fetch(table_name, out_path, fmt, overwrite):
-    """Descarga una tabla y verifica su hash. Escribe .part y renombra al final."""
+def list_files(table_name):
+    """Muestra los archivos adjuntos de una tabla, con su tamano."""
+    import redivis
+
+    files = redivis.dataset(DATASET).table(table_name).list_files()
+    print(f"Archivos adjuntos de la tabla {table_name}\n")
+    for item in files:
+        size_mb = f"{item.size / 1e6:.1f} MB" if item.size else "? MB"
+        print(f"  {str(item.path):<50}  {size_mb}")
+    print(
+        "\nBaje uno con:"
+        f'\n  python scripts/fetch_metadata.py --table "{table_name}" '
+        "--file <nombre> --out <archivo>"
+    )
+
+
+def fetch(table_name, out_path, fmt, overwrite, file_name=None):
+    """Descarga una tabla o un archivo adjunto y verifica su hash.
+
+    Escribe en un archivo .part y solo lo renombra si la descarga termina.
+    """
     import redivis
 
     if out_path.exists() and not overwrite:
@@ -92,7 +129,12 @@ def fetch(table_name, out_path, fmt, overwrite):
     out_path.parent.mkdir(parents=True, exist_ok=True)
     temporary = out_path.with_name(out_path.name + ".part")
     table = redivis.dataset(DATASET).table(table_name)
-    table.download(str(temporary), format=fmt, overwrite=True)
+    if file_name:
+        # Tabla de archivos adjuntos, como CheXpert Labels o DICOM_train.
+        table.file(file_name).download(str(temporary), overwrite=True)
+    else:
+        # Tabla de datos: se exporta completa en el formato indicado.
+        table.download(str(temporary), format=fmt, overwrite=True)
     temporary.replace(out_path)
 
     size_gb = out_path.stat().st_size / 1e9
@@ -118,6 +160,9 @@ def fetch(table_name, out_path, fmt, overwrite):
 def parse_args():
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--table", help="Nombre de la tabla en el dataset")
+    parser.add_argument("--files", metavar="TABLA",
+                        help="Lista los archivos adjuntos de una tabla y termina")
+    parser.add_argument("--file", help="Archivo adjunto a bajar de --table")
     parser.add_argument("--out", help="Nombre del archivo de salida")
     parser.add_argument("--output-dir", type=Path, default=Path("data/raw/metadata"))
     parser.add_argument("--format", default="csv", help="csv o json (por defecto csv)")
@@ -128,12 +173,16 @@ def parse_args():
 
 def main():
     args = parse_args()
+    if args.files:
+        list_files(args.files)
+        return
     if not args.table:
         list_tables()
         return
     if not args.out:
         raise SystemExit("Indique tambien --out con el nombre del archivo de salida.")
-    fetch(args.table, args.output_dir / args.out, args.format, args.overwrite)
+    fetch(args.table, args.output_dir / args.out, args.format, args.overwrite,
+          file_name=args.file)
 
 
 if __name__ == "__main__":
