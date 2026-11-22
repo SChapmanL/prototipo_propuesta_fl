@@ -41,7 +41,15 @@ def build_model(config):
         keras.Input(shape=IMAGE_SHAPE),
         base,
         keras.layers.GlobalAveragePooling2D(),
-        keras.layers.Dense(1, activation="sigmoid"),
+        # Semilla explicita en la cabeza. Sin ella Keras toma la semilla del
+        # generador random de Python, y en el servidor Flower otros hilos lo
+        # usan mientras carga ResNet50. Resultado medido el 22 de noviembre:
+        # una inicializacion distinta en cada ejecucion federada.
+        # GlorotUniform es el mismo inicializador que Dense usa por defecto.
+        keras.layers.Dense(
+            1, activation="sigmoid",
+            kernel_initializer=keras.initializers.GlorotUniform(
+                seed=int(config["seed"]))),
     ])
 
     modelo.compile(

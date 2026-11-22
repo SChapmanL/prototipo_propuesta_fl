@@ -6,20 +6,44 @@ No usa Flower. Lee los modelos guardados en outputs/federation y comprueba:
    de train de los pesos que cada cliente obtiene al entrenar por separado
    desde global_round_0.keras.
 
-Uso:  python scripts/check_federation.py
+Si la carpeta tiene run_config.json (lo escribe el servidor), se usan esos
+valores, que son los de la ejecución. Si no, los de pyproject.toml.
+
+Con la ResNet50 real la diferencia de FedAvg puede no ser 0.0 exacto. El
+entrenamiento en CPU tiene redondeos que dependen del orden de las
+operaciones. Una diferencia del orden de 1e-6 o menor es coherente. El
+control con el promedio simple solo se aplica si los clientes tienen
+distinto número de ejemplos de train.
+
+Uso:
+    python scripts/check_federation.py
+    python scripts/check_federation.py --output-dir outputs/federation_real_...
 """
 
+import argparse
+import json
+import sys
 import tomllib
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 import keras
 import numpy as np
 
 from pneumonia_fl.components import build_model, load_data, train_local
 
+parser = argparse.ArgumentParser()
+parser.add_argument("--output-dir", help="carpeta de una ejecución terminada")
+args = parser.parse_args()
+
 config = tomllib.loads(Path("pyproject.toml").read_text(encoding="utf-8"))
 config = config["tool"]["flwr"]["app"]["config"]
-output_dir = Path(config["output-dir"])
+output_dir = Path(args.output_dir or config["output-dir"])
+run_config_path = output_dir / "run_config.json"
+if run_config_path.is_file():
+    config = json.loads(run_config_path.read_text(encoding="utf-8"))
+print("carpeta verificada:", output_dir.resolve())
 
 
 def saved_weights(name):
@@ -62,5 +86,11 @@ print("ejemplos de train:", num_examples)
 print("diferencia FedAvg ponderado vs ronda 1:", max_difference(manual_average, round_1))
 
 # Control negativo: un promedio simple NO debe coincidir.
+# Solo sirve si los clientes tienen distinto número de ejemplos. Con tamaños
+# iguales (280 y 280 en las particiones reales) ambos promedios son el mismo.
 simple_average = [sum(layer) / len(layer) for layer in zip(*local_weights)]
-print("diferencia promedio simple vs ronda 1:", max_difference(simple_average, round_1))
+if len(set(num_examples)) > 1:
+    print("diferencia promedio simple vs ronda 1:", max_difference(simple_average, round_1))
+else:
+    print("control negativo no aplicable: los clientes tienen el mismo número "
+          "de ejemplos, así que FedAvg ponderado y promedio simple coinciden.")

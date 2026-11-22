@@ -1,5 +1,7 @@
 # Federación con Flower: uso y conexión con la parte de Ariana
 
+> **Aviso del 22 de noviembre de 2026.** Este documento describe la prueba sintética. Desde esa fecha `components.py` usa los componentes reales y `pyproject.toml` tiene 10 rondas. Para ejecutar con datos reales usar `docs/11_EJECUCION_FEDERADA_REAL.md` y `scripts/run_federation.py`, no los comandos `flwr run` de abajo.
+
 Estado al 15 de noviembre de 2026: dos rondas con dos clientes ejecutadas y verificadas en esta PC, con datos sintéticos. Los resultados son una **prueba técnica** de coordinación. No son resultados de detección de neumonía.
 
 ## Versiones elegidas
@@ -93,6 +95,10 @@ La pérdida de validación bajó de 0.6920 a 0.6907 en `client_1`. El cambio es 
 | `scripts/check_federation.py` | (script) | Recalcula FedAvg a mano y lo compara con el modelo guardado |
 
 ## Pasos para conectar la parte de Ariana
+
+**Hechos el 22 de noviembre de 2026.** `components.py` ya usa los componentes reales. La ejecución con datos reales se describe en `docs/11_EJECUCION_FEDERADA_REAL.md`. Los resultados sintéticos de esta página siguen valiendo como prueba técnica de coordinación. Para repetirlos hay que volver a activar `provisional.py` en `components.py`.
+
+Lista original, conservada como historial:
 
 1. Ariana confirma o corrige `docs/07_CONTRATO_INTEGRACION.md`.
 2. Ariana crea sus módulos dentro de `pneumonia_fl/` con las cuatro funciones del contrato.

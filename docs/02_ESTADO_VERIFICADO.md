@@ -120,9 +120,24 @@ Detalle completo, con cifras y fundamentos, en `docs/10_MODELO_LOCAL.md`.
 - **Modelo.** ResNet50 con base congelada, 2 049 parámetros entrenables. Dos llamadas a `build_model` dan pesos idénticos en los 320 tensores, que es lo que FedAvg necesita.
 - **Referencias locales.** Ejecutadas por cliente, sin usar prueba.
 
+## Integración federada del 22 de noviembre de 2026
+
+Ejecutado en la PC de Sebastián. Detalle y comandos en `docs/11_EJECUCION_FEDERADA_REAL.md`.
+
+- **Componentes reales conectados.** `components.py` usa `data/dicom.py`, `model.py` y `training.py`.
+- **Prueba de principio a fin con pilot20.** 20 DICOM, manifiestos temporales fuera del repositorio. Ejecuciones de 2 y 3 rondas: 2 de 2 clientes en cada ronda, huellas iguales, FedAvg recalculado con diferencia 0.0 y modelo final recargado idéntico.
+- **Métricas del modelo global.** Se calculan sobre los dos clientes juntos con resúmenes sumables. AUROC y AUPRC por histogramas, con error medido menor a 0,0002.
+- **Checkpoint con validación.** El servidor elige la ronda con mayor AUROC global de validación y evalúa test una vez con ella.
+- **Reporte formal.** `reporte.md` y tres CSV por ejecución.
+- **Configuración.** 10 rondas con 1 época local, el piloto de `docs/05`.
+
+**Hallazgo: la inicialización de la cabeza no era reproducible dentro de Flower.** Keras tomaba la semilla de la capa Dense del generador `random` de Python. En el servidor Flower otros hilos usan ese generador mientras ResNet50 carga sus pesos. Dos ejecuciones federadas idénticas empezaron con pesos distintos. Se reprodujo fuera de Flower con un hilo que usa `random` en paralelo. FedAvg no estaba afectado, porque ambos clientes siempre reciben los pesos del servidor. Sí lo estaba la reproducibilidad entre ejecuciones. Corrección en `model.py`: `GlorotUniform(seed=config["seed"])` en la cabeza, el mismo inicializador que Keras usa por defecto. Comprobado estable con y sin hilos en paralelo. Después de la corrección, dos ejecuciones federadas idénticas de 2 rondas dieron pesos iguales en las rondas 0, 1 y 2, con diferencia máxima 0.0, y las mismas huellas.
+
+Consecuencia: la cabeza ahora empieza con otros valores aleatorios. Las referencias locales de `outputs/local_baselines/` se calcularon con la inicialización anterior. Para una comparación exacta conviene repetir `piloto` antes de la federación.
+
 ## Trabajo pendiente
 
-Sigue pendiente la integración con la federación y la evaluación final con prueba. Las métricas de `outputs/federation/` son de la prueba técnica sintética de Sebastián, no de datos reales.
+Ejecutar la federación de 10 rondas con los 800 DICOM en la PC de Ariana. Ver `docs/04_SIGUIENTE_PASO.md`. Las métricas de `outputs/federation/` son de la prueba técnica sintética de Sebastián, no de datos reales.
 
 **El modelo no aprende todavía.** Las referencias locales dan AUROC de validación entre 0,49 y 0,59, es decir el azar. La causa está medida y es sobreajuste: con 60 épocas el AUROC de entrenamiento sube a 0,84 mientras el de validación se queda en 0,54. Con 280 imágenes de entrenamiento por cliente no hay con qué generalizar. La palanca propuesta es ampliar la muestra, decisión que corresponde al equipo.
 

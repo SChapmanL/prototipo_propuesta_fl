@@ -23,8 +23,8 @@ Stack: Python 3.12, TensorFlow/Keras 2.21, ResNet50, Flower 1.43. Una PC sin GPU
 | Preprocesamiento DICOM y `load_data` | Implementado y con controles superados |
 | Modelo, entrenamiento y evaluación local | Implementados y ejecutados |
 | Referencias locales por cliente | Ejecutadas |
-| Federación con componentes reales | **Pendiente.** Hoy usa el componente provisional sintético |
-| Evaluación final con prueba | Pendiente. Test sigue sin usarse |
+| Federación con componentes reales | **Conectada** el 22 de noviembre. Falta ejecutarla con los 800 DICOM. Ver `docs/11_EJECUCION_FEDERADA_REAL.md` |
+| Evaluación final con prueba | Automatizada: checkpoint elegido con validación y test una vez. Falta ejecutarla con datos reales |
 
 **El modelo todavía no aprende.** Las referencias locales dan AUROC de validación entre 0,49 y 0,59, que es el azar. La causa está medida y es sobreajuste: con 60 épocas el AUROC de entrenamiento sube a 0,84 mientras el de validación se queda en 0,54. Con 280 imágenes de entrenamiento por cliente no hay con qué generalizar. El detalle y la recomendación están en `docs/10_MODELO_LOCAL.md`.
 
@@ -47,6 +47,7 @@ El repositorio tiene **código, documentación y configuración**. No contiene r
 | `pneumonia_fl/server_app.py` | Sebastián | Servidor, rondas, FedAvg y guardado global |
 | `pneumonia_fl/provisional.py` | Sebastián | Componente sintético para probar la coordinación |
 | `pneumonia_fl/weights.py` | Sebastián | Huella numérica de una lista de pesos |
+| `pneumonia_fl/global_metrics.py` | Sebastián | Métricas del modelo global sobre ambos clientes, sin juntar datos |
 
 ### Scripts
 
@@ -61,6 +62,8 @@ El repositorio tiene **código, documentación y configuración**. No contiene r
 | `local_baseline.py` | Referencias locales por cliente |
 | `lr_sweep.py` | Diagnóstico de la tasa de aprendizaje |
 | `curva_epocas.py` | Diagnóstico de sobreajuste por épocas |
+| `run_federation.py` | Controles previos, ejecución federada con datos reales y reporte |
+| `report_federation.py` | Reporte formal (`reporte.md` y CSV) de una ejecución terminada |
 | `check_federation.py` | Verifica FedAvg sin usar Flower |
 
 ## Puesta en marcha
@@ -111,15 +114,16 @@ Hacen falta unos 11 GB libres. La muestra ocupa 10,07 GB.
 
 ### Ejecutar la federación
 
-Necesita `pip install -e .`, que añade Flower. Requiere activar el entorno, porque `flwr` lanza `flower-superlink` y lo busca en el PATH.
+Necesita `pip install -e .`, que añade Flower. El script comprueba los datos, lanza dos clientes en modo secuencial con rutas absolutas y escribe en una carpeta nueva.
 
 ```powershell
 .\.venv\Scripts\Activate.ps1
-flwr run . --stream
-python scripts/check_federation.py
+python -m pip install -e .
+python scripts/run_federation.py --check-only
+python scripts/run_federation.py
 ```
 
-Ver `docs/08_FEDERACION_FLOWER.md` para el modo secuencial en CPU y las trampas ya diagnosticadas.
+Guía paso a paso y lectura de resultados en `docs/11_EJECUCION_FEDERADA_REAL.md`. Trampas ya diagnosticadas en `docs/08_FEDERACION_FLOWER.md`.
 
 ## Reglas de datos que no se negocian
 

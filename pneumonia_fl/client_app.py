@@ -21,14 +21,25 @@ from pneumonia_fl.components import (
     load_data,
     train_local,
 )
+from pneumonia_fl.global_metrics import score_histograms
 from pneumonia_fl.weights import weights_fingerprint
 
 app = ClientApp()
 
 
 def client_number(context):
-    """Número de cliente (1 o 2). La simulación de Flower numera desde 0."""
-    return int(context.node_config["partition-id"]) + 1
+    """Número de cliente (1 o 2). La simulación de Flower numera desde 0.
+
+    Falla con un mensaje claro si la simulación crea más de dos nodos. Sin
+    num-supernodes=2, Flower puede lanzar más clientes de los que existen.
+    """
+    number = int(context.node_config["partition-id"]) + 1
+    if number > 2:
+        raise RuntimeError(
+            f"Nodo {number}: solo existen client_1 y client_2. "
+            "Ejecute con num-supernodes=2 (scripts/run_federation.py lo hace)."
+        )
+    return number
 
 
 def model_with_global_weights(msg, context):
@@ -101,6 +112,11 @@ def evaluate(msg: Message, context: Context):
     eval_data, num_examples = load_split(context, split)
 
     local_metrics = evaluate_local(model, eval_data)
+    # Resúmenes sumables para las métricas conjuntas del modelo global.
+    # No salen imágenes ni predicciones individuales (pneumonia_fl/global_metrics.py).
+    hist_pos, hist_neg = score_histograms(model, eval_data)
+    local_metrics["hist-pos"] = hist_pos
+    local_metrics["hist-neg"] = hist_neg
 
     metrics = {f"{split}_{name}": value for name, value in local_metrics.items()}
     return reply(msg, context, num_examples, metrics)

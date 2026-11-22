@@ -1,6 +1,8 @@
 # Continuidad del prototipo CheXpert Plus
 
-Actualización del reparto de trabajo: 15 de noviembre de 2026.
+Actualización del reparto de trabajo: 15 de noviembre de 2026. Estado y orden de lectura actualizados el 22 de noviembre de 2026.
+
+**Si vienes a continuar la federación, empieza por `docs/04_SIGUIENTE_PASO.md` y `docs/11_EJECUCION_FEDERADA_REAL.md`.**
 
 ## Cómo usar este repositorio
 
@@ -16,6 +18,12 @@ Orden de lectura:
 6. docs/04_SIGUIENTE_PASO.md.
 7. docs/05_REPOSITORIO_Y_PIPELINE.md.
 8. docs/06_LIMITACIONES_Y_FUENTES.md.
+9. docs/07_CONTRATO_INTEGRACION.md, la frontera entre el modelo local y la federación.
+10. docs/08_FEDERACION_FLOWER.md, la federación y su prueba sintética.
+11. docs/10_MODELO_LOCAL.md, el modelo local y las referencias por cliente.
+12. docs/11_EJECUCION_FEDERADA_REAL.md, la ejecución con datos reales y el reporte formal.
+
+`docs/09_PROMPT_ARIANA.md` es el texto para iniciar la sesión de Ariana. No hace falta leerlo en otras sesiones.
 
 El plan histórico está en docs/archive/Plan_prototipo_federado_CheXpert.md. El reparto acordado en este archivo reemplaza las sugerencias anteriores de asignación de tareas. La autorización para avanzar en paralelo descrita aquí reemplaza la indicación anterior de no iniciar ningún entrenamiento. Las políticas de datos y los controles de validación siguen vigentes.
 
@@ -31,7 +39,14 @@ ResNet50 es aprendizaje profundo. La parte de Ariana se denomina “modelo y ent
 
 ## Estado conocido y datos locales
 
-Se preparó una lista reproducible de 800 pacientes de CheXpert Plus. Cuatro DICOM independientes de prueba con etiquetas 0/1 se decodificaron correctamente. La descarga completa, su validación, las particiones, el preprocesamiento visual y el entrenamiento no tienen resultados confirmados en esta documentación. Comprueba el estado local antes de afirmar que algo está listo.
+Estado al 22 de noviembre de 2026. El detalle verificado está en `docs/02_ESTADO_VERIFICADO.md`.
+
+- Los 800 DICOM están descargados y validados en la PC de Ariana, 800 de 800 sin fallos.
+- Las particiones por paciente, el preprocesamiento, ResNet50 y las referencias locales están hechos. El modelo local no supera el azar todavía.
+- La federación usa los componentes reales desde el 22 de noviembre. Se probó de principio a fin con los 20 DICOM de pilot20.
+- Falta ejecutar la federación de 10 rondas con los 800 DICOM. Es el siguiente paso.
+
+Comprueba el estado local antes de afirmar que algo está listo. Los datos solo existen en la PC donde se descargaron.
 
 El repositorio contiene documentación, scripts y configuración. Las listas reales de selección pertenecen a data/manifests/ y están excluidas de Git. No supongas que vienen incluidas al clonar.
 
@@ -129,6 +144,8 @@ La estructura debe adaptarse al código real. No crear módulos vacíos ni reorg
 7. Guardar y recargar el modelo global y registrar métricas de validación por ronda.
 8. Tras comprobar el flujo, ejecutar el piloto completo con la configuración acordada.
 9. Elegir checkpoint con validación y usar test al final, una vez fijadas las decisiones.
+
+Al 22 de noviembre, los pasos 1 a 7 están comprobados. `scripts/run_federation.py` automatiza los pasos 8 y 9: ejecuta 10 rondas, elige el checkpoint con mayor AUROC conjunto de validación, evalúa test una vez y escribe un reporte formal.
 
 Si un cliente falla, registrar la ronda como incompleta y no presentarla como federación exitosa de dos participantes. Ejecutar clientes secuencialmente no significa entrenar el cliente 2 desde los pesos recién actualizados por el cliente 1.
 
