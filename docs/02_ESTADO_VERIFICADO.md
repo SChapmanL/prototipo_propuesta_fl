@@ -135,9 +135,48 @@ Ejecutado en la PC de Sebastián. Detalle y comandos en `docs/11_EJECUCION_FEDER
 
 Consecuencia: la cabeza ahora empieza con otros valores aleatorios. Las referencias locales de `outputs/local_baselines/` se calcularon con la inicialización anterior. Para una comparación exacta conviene repetir `piloto` antes de la federación.
 
+## Federación real con los 800 DICOM, 23 de noviembre de 2026
+
+Ejecutado en la PC de Ariana, CPU. Python 3.12.10, Flower 1.43.0, TensorFlow 2.21.0, Keras 3.15.1. Carpeta `outputs/federation_real_20261123-005414/`, excluida de Git.
+
+**Referencia local repetida.** `local_baseline.py --escenario piloto`, 10 épocas, unos 5 minutos. La versión anterior se conserva como `piloto_init_anterior.json`. `federacion.json` no se tocó.
+
+| Cliente | AUROC val local, nueva inicialización |
+|---|---|
+| client_1 | 0,5528 |
+| client_2 | 0,6633 |
+
+**Controles.**
+
+- `run_federation.py --check-only`: todos superados. 280, 60 y 60 imágenes por cliente, balance 50/50, 800 pacientes sin repetir y todos los DICOM en disco.
+- 10 de 10 rondas completas, 2 de 2 clientes en cada una, 0 fallos.
+- Mismas huellas de pesos globales recibidas por ambos clientes en cada ronda.
+- `check_federation.py`: diferencia final frente a última ronda 0.0. FedAvg recalculado frente a ronda 1: 0.0. Control negativo no aplicable porque ambos clientes tienen 280 imágenes.
+- Duración de las 10 rondas: 18,3 minutos.
+
+**Validación del modelo global.**
+
+| Ronda | AUROC client_1 | AUROC client_2 | AUROC global |
+|---|---|---|---|
+| 1 | 0,5822 | 0,6833 | 0,6326 |
+| 5, elegida | 0,5994 | 0,6872 | 0,6454 |
+| 10 | 0,5967 | 0,6806 | 0,6390 |
+
+**Test con el checkpoint de la ronda 5, usado una sola vez.**
+
+| Alcance | AUROC | AUPRC | Accuracy |
+|---|---|---|---|
+| client_1 | 0,4439 | 0,4870 | 0,4333 |
+| client_2 | 0,6367 | 0,6019 | 0,6000 |
+| global | 0,5437 | 0,5503 | 0,5167 |
+
+**Lectura.** La integración funciona de principio a fin con datos reales. La ronda 10 supera a la referencia local en validación por 0,044 en client_1 y 0,017 en client_2. Con 60 imágenes por cliente esa diferencia está dentro del ruido. El test global de 0,54 confirma que el modelo sigue cerca del azar. No es evidencia a favor ni en contra del aprendizaje federado. Las métricas son técnicas, no validación clínica.
+
 ## Trabajo pendiente
 
-Ejecutar la federación de 10 rondas con los 800 DICOM en la PC de Ariana. Ver `docs/04_SIGUIENTE_PASO.md`. Las métricas de `outputs/federation/` son de la prueba técnica sintética de Sebastián, no de datos reales.
+La federación de 10 rondas con los 800 DICOM está ejecutada. Las métricas de `outputs/federation/` siguen siendo de la prueba técnica sintética de Sebastián.
+
+Siguientes decisiones del equipo: ampliar la muestra y preparar el primer escenario Non-IID.
 
 **El modelo no aprende todavía.** Las referencias locales dan AUROC de validación entre 0,49 y 0,59, es decir el azar. La causa está medida y es sobreajuste: con 60 épocas el AUROC de entrenamiento sube a 0,84 mientras el de validación se queda en 0,54. Con 280 imágenes de entrenamiento por cliente no hay con qué generalizar. La palanca propuesta es ampliar la muestra, decisión que corresponde al equipo.
 
